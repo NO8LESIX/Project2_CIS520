@@ -10,7 +10,7 @@
 // You might find this handy.  I put it around unused parameters, but you should
 // remove it before you submit. Just allows things to compile initially.
 #define UNUSED(x) (void)(x)
-#define QUANTUM 4
+#define QUANTUM 5
 
 // private function
 void virtual_cpu(ProcessControlBlock_t *process_control_block) 
