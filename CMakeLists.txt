@@ -35,8 +35,8 @@ target_link_libraries(analysis dyn_array)
 # target_link_libraries(analysis dyn_array process_scheduling)
 
 # Compile the the tester executable.
-# add_executable(${PROJECT_NAME}_test test/test.ccp)
-add_executable(${PROJECT_NAME}_test test/test.ccp src/process_scheduling.c)
+# add_executable(${PROJECT_NAME}_test test/test.cpp)
+add_executable(${PROJECT_NAME}_test test/test.cpp src/process_scheduling.c)
 target_compile_definitions(${PROJECT_NAME}_test PRIVATE GRAD_TEST=1)
 
 target_compile_definitions(${PROJECT_NAME}_test PRIVATE)
