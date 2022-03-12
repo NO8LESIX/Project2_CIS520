@@ -245,8 +245,8 @@ TEST (priority, Priority:GoodInputA) {
     bool res = priority (pcbs,sr);
     ASSERT_EQ(true,res);
     float answers[3] = {13,3,30};
-    EXPECT_EQ(answers[0],sr->average_wall_clock_time);
-    EXPECT_EQ(answers[1],sr->average_latency_time);
+    EXPECT_EQ(answers[0],sr->average_waiting_time);
+    EXPECT_EQ(answers[1],sr->average_turnaround_time);
     EXPECT_EQ(answers[2],sr->total_run_time);
     
     //garbage collection
@@ -278,8 +278,8 @@ TEST (priority, Priority:GoodInputB) {
     bool res = priority (pcbs,sr);
     ASSERT_EQ(true,res);
     float answers[3] = {12,8.2,19};
-    EXPECT_EQ(answers[0],sr->average_wall_clock_time);
-    EXPECT_EQ(answers[1],sr->average_latency_time);
+    EXPECT_EQ(answers[0],sr->average_waiting_time);
+    EXPECT_EQ(answers[1],sr->average_turnaround_time);
     EXPECT_EQ(answers[2],sr->total_run_time);
     
     //garbage collection
@@ -334,8 +334,8 @@ TEST (round_robin, RR:GoodInputA) {
   	bool res = round_robin (pcbs,sr,QUANTUM);	
   	ASSERT_EQ(true,res);
   	float answers[3] = {15.666667,5.666667,30};
-  	EXPECT_FLOAT_EQ(answers[0],sr->average_wall_clock_time);
-  	EXPECT_FLOAT_EQ(answers[1],sr->average_latency_time);
+  	EXPECT_FLOAT_EQ(answers[0],sr->average_waiting_time);
+  	EXPECT_FLOAT_EQ(answers[1],sr->average_turnaround_time);
   	EXPECT_EQ(answers[2],sr->total_run_time);
    
     //garbage collection
@@ -363,8 +363,8 @@ TEST (round_robin, RR:GoodInputB) {
   	bool res = round_robin (pcbs,sr,QUANTUM);	
   	ASSERT_EQ(true,res);
   	float answers[3] = {22.333334,12,31};
-  	EXPECT_FLOAT_EQ(answers[0],sr->average_wall_clock_time);
-  	EXPECT_EQ(answers[1],sr->average_latency_time);
+  	EXPECT_FLOAT_EQ(answers[0],sr->average_waiting_time);
+  	EXPECT_EQ(answers[1],sr->average_turnaround_time);
   	EXPECT_EQ(answers[2],sr->total_run_time);
    
     //garbage collection
