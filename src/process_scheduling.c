@@ -21,15 +21,19 @@ void virtual_cpu(ProcessControlBlock_t *process_control_block)
 
 bool first_come_first_serve(dyn_array_t *ready_queue, ScheduleResult_t *result) 
 {
+    //nothing to process
     if(ready_queue == NULL || result == NULL) return false;
     
+    //initialize vars
     ProcessControlBlock_t pcb;
     
     int burst_time = 0;
     int wall_time = 0;
     int latency = 0;
     int capacity = (int) dyn_array_size(ready_queue);
+    //end vars
     
+    //process ready queue
     for(int i = 0; i < capacity; i++){
       latency += burst_time;
       dyn_array_extract_back(ready_queue, (void*)&pcb);
