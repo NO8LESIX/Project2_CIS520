@@ -129,50 +129,75 @@ bool priority(dyn_array_t *ready_queue, ScheduleResult_t *result)
     return true;*/   
 }
 
-#ifdef GRAD_TESTS
+
 bool round_robin(dyn_array_t *ready_queue, ScheduleResult_t *result, size_t quantum) 
 {
-    if(ready_queue == NULL || result == NULL) return false;
-    
-    ProcessControlBlock_t pcb;    
-    size_t capacity = dyn_array_size(ready_queue);
-    
-    float total_latency = 0;
-    float total_wall_clock = 0;
-    float counter = 0;
-    
-    while(!dyn_array_empty(ready_queue)){
-      
-      dyn_array_extract_back(ready_queue, (void*)&pcb);
-      
-      if(pcb.started == false){
-        total_latency += counter;
-        pcb.started = 1pcb.started;
-      }
-      
-      for(uint32_t i = 0; i< quantum; i++){
-        virtual_cpu(&pcb);
-        counter++;
-        if(pcb.ermaining_burst_time == 0) break;
-      }
-      
-      if(pcb.remaining_burst_time == 0){
-        total_wall_clock += counter;
-        continue;
-      }
-      else{
-        dyn_array_push_front(ready_queue, &pcb);
-      }
-    
+    // error check params
+    if(!ready_queue || !result || quantum <= 0)
+        return false;
+
+    // initialize variables
+    uint32_t size = dyn_array_size(ready_queue);
+    dyn_array_t *dyn_arr_queue = dyn_array_create(0, sizeof(ProcessControlBlock_t), NULL);
+    // uint32_t types to easily calculate results
+    uint32_t waiting_time = 0;
+    uint32_t turnaround_time = 0;
+    uint32_t run_time = 0;
+
+    uint32_t current_run_time;
+
+    // get pcb initial arrival
+    for (uint32_t i = 0; i < size; i++) {
+        ProcessControlBlock_t *pcb_ptr = (ProcessControlBlock_t *)dyn_array_at(ready_queue, i);
+        // store priority
+        pcb_ptr->priority = pcb_ptr->arrival;
     }
-    
-    result->average_waiting_time = (float)waiting_time / (float)size;
-    result->average_turnaround_time = (float)turnaround_time / (float)size;
+
+    // set up initial pcb queue helper
+    pcb_queue_helper(ready_queue, dyn_arr_queue, run_time);
+
+    // while dyn array size has not been capped
+    while(dyn_array_size(dyn_arr_queue) != 0) {
+        ProcessControlBlock_t pcb;
+        dyn_array_extract_front(dyn_arr_queue, &pcb);
+        waiting_time += run_time - pcb.arrival;
+
+        // get current run time
+        if(pcb.remaining_burst_time > quantum)
+            current_run_time = quantum;
+        else
+            current_run_time = pcb.remaining_burst_time;
+
+        run_time += current_run_time;
+
+        // while more run time exists
+        while(current_run_time > 0) {
+            virtual_cpu(&pcb);
+            current_run_time--;
+        }
+
+        pcb.arrival = run_time;
+
+        // get available pcb queue
+        pcb_queue_helper(ready_queue, dyn_arr_queue, run_time);
+
+        if(pcb.remaining_burst_time == 0)
+            // set turn around time if no more remaining burst time
+            turnaround_time += run_time - pcb.priority;
+        else
+            dyn_array_push_back(dyn_arr_queue, &pcb);
+    }
+
+    // set results
+    result->average_waiting_time = (float)waiting_time / size;
+    result->average_turnaround_time = (float)turnaround_time / size;
     result->total_run_time = run_time;
-    
-    return true;  
+
+    // destroy dyn array queue
+    dyn_array_destroy(dyn_arr_queue);
+    return true;
 }
-#endif
+
 
 dyn_array_t *load_process_control_blocks(const char *input_file) 
 {
