@@ -231,3 +231,35 @@ bool shortest_job_first(dyn_array_t *ready_queue, ScheduleResult_t *result)
     result->total_run_time = clock_time;
     return true;
 }
+
+void pcb_queue_helper(dyn_array_t *ready_queue, dyn_array_t *dyn_arr_queue, uint32_t run_time) {
+    size_t size = dyn_array_size(ready_queue);
+    for(size_t i = 0; i < size; i++) {
+        ProcessControlBlock_t pcb;
+        dyn_array_extract_back(ready_queue, &pcb);
+        if(pcb.arrival <= run_time)
+            dyn_array_push_back(dyn_arr_queue, &pcb);
+        else
+            dyn_array_push_front(ready_queue, &pcb);
+    }
+}
+
+void pcb_queue_sort_by_time_helper(dyn_array_t *ready_queue, dyn_array_t *dyn_arr_queue, uint32_t run_time) {
+    
+    pcb_queue_helper(ready_queue, dyn_arr_queue, run_time);
+    dyn_array_sort(dyn_arr_queue, burst_time_calc_helper);
+}
+
+int arrival_calc_helper(const void *pcb1, const void *pcb2) {
+    
+    uint32_t a = ((ProcessControlBlock_t *)pcb1)->arrival;
+    uint32_t b = ((ProcessControlBlock_t *)pcb2)->arrival;
+    if(a == b)
+        return ((ProcessControlBlock_t *)pcb1)->remaining_burst_time - ((ProcessControlBlock_t *)pcb2)->remaining_burst_time;
+    return b - a;
+}
+
+int burst_time_calc_helper(const void *pcb1, const void *pcb2) {
+
+    return ((ProcessControlBlock_t *)pcb1)->remaining_burst_time - ((ProcessControlBlock_t *)pcb2)->remaining_burst_time;
+}
