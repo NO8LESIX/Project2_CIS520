@@ -165,7 +165,69 @@ bool shortest_remaining_time_first(dyn_array_t *ready_queue, ScheduleResult_t *r
 
 bool shortest_job_first(dyn_array_t *ready_queue, ScheduleResult_t *result) 
 {
-    UNUSED(ready_queue);
-    UNUSED(result);
-    return false;   
+    if(!ready_queue || !result)
+        return false;
+
+    result->average_waiting_time = 0;
+    result->average_turnaround_time = 0;
+    result->total_run_time = 0;
+
+    bool extract = false;
+
+    uint32_t size = dyn_array_size(ready_queue);
+    uint32_t clock_time = 0;
+    uint32_t total_latency = 0;
+    uint32_t turnaround_time = 0;
+    int arrival_sum = 0;
+
+    ProcessControlBlock_t *pcb_ptr = malloc(sizeof(ProcessControlBlock_t));
+    pcb_ptr = (ProcessControlBlock_t *)dyn_array_export(ready_queue);
+    dyn_array_t *dyn_arr_queue = dyn_array_create(0, size, NULL);
+
+    for(uint32_t i = 0; i < size; i++) {
+        for(uint32_t j = 0; j < size; j++) {
+
+            if(pcb_ptr[j].arrival <= clock_time && pcb_ptr[j].started == false) {
+
+                extract = dyn_array_push_back(dyn_arr_queue, &pcb_ptr[j]);
+                if(extract == false)
+                    return false;
+
+                arrival_sum += pcb_ptr[j].arrival;
+                pcb_ptr[j].started = true;
+            }
+        }
+
+        if(dyn_array_size(dyn_arr_queue) > 0) {
+            
+            dyn_array_sort(dyn_arr_queue, shortest_burst_time_helper);
+
+            while(dyn_array_size(dyn_arr_queue) > 0) {
+                
+                ProcessControlBlock_t pcb;
+                extract = dyn_array_extract_back(dyn_arr_queue, &pcb);
+                if(extract == false)
+                    return false;
+
+                
+                total_latency += clock_time;
+                pcb.started = true;
+
+               
+                while(pcb.remaining_burst_time != 0) {
+                    virtual_cpu(&pcb);
+                    clock_time++;       
+                }
+
+                pcb.started = false;
+                turnaround_time += clock_time;
+            }
+        }
+    }
+
+
+    result->average_waiting_time = (float)(total_latency - arrival_sum) / size;
+    result->average_turnaround_time = (float)(turnaround_time - arrival_sum) / size;
+    result->total_run_time = clock_time;
+    return true;
 }
