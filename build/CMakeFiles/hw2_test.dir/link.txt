@@ -1,0 +1,1 @@
+/opt/software/software/GCCcore/9.3.0/bin/c++  -std=c++11 -Wall -Wextra -Wshadow -Werror  -rdynamic CMakeFiles/hw2_test.dir/test/tests.cpp.o CMakeFiles/hw2_test.dir/src/process_scheduling.c.o  -o hw2_test  -Wl,-rpath,/homes/ewpeters/Project2_CIS520/build -lgtest -lpthread libdyn_array.so 

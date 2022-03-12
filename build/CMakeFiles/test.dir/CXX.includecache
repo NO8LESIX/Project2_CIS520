@@ -1,0 +1,42 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+../include/dyn_array.h
+stdbool.h
+-
+stddef.h
+-
+stdlib.h
+-
+string.h
+-
+stdint.h
+-
+
+/homes/ewpeters/Project2_CIS520/include/processing_scheduling.h
+stdbool.h
+-
+stdint.h
+-
+dyn_array.h
+/homes/ewpeters/Project2_CIS520/include/dyn_array.h
+
+/homes/ewpeters/Project2_CIS520/test/tests.cpp
+fcntl.h
+-
+stdio.h
+-
+gtest/gtest.h
+/homes/ewpeters/Project2_CIS520/test/gtest/gtest.h
+pthread.h
+-
+../include/processing_scheduling.h
+/homes/ewpeters/Project2_CIS520/include/processing_scheduling.h
+dyn_array.h
+-
+

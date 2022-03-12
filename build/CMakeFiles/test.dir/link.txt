@@ -1,0 +1,1 @@
+/opt/software/software/GCCcore/9.3.0/bin/c++ -fPIC -std=c++11 -Wall -Wextra -Wshadow -Werror  -shared -Wl,-soname,libtest.so -o libtest.so CMakeFiles/test.dir/test/tests.cpp.o 

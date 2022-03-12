@@ -1,0 +1,1 @@
+/opt/software/software/GCCcore/9.3.0/bin/cc -fPIC -std=c11 -Wall -Wextra -Wshadow -Werror  -shared -Wl,-soname,libdyn_array.so -o libdyn_array.so CMakeFiles/dyn_array.dir/src/dyn_array.c.o 

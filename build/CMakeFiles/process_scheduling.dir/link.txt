@@ -1,0 +1,1 @@
+/opt/software/software/GCCcore/9.3.0/bin/cc -fPIC -std=c11 -Wall -Wextra -Wshadow -Werror  -shared -Wl,-soname,libprocess_scheduling.so -o libprocess_scheduling.so CMakeFiles/process_scheduling.dir/src/process_scheduling.c.o 
