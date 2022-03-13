@@ -6,5 +6,5 @@ C_FLAGS = -std=c11 -Wall -Wextra -Wshadow -Werror -fPIC
 
 C_DEFINES = -Ddyn_array_EXPORTS
 
-C_INCLUDES = -I/homes/ewpeters/Project2_CIS520/include 
+C_INCLUDES = -I/homes/cbcerna/cis520/hw2/include 
 

@@ -18,7 +18,7 @@ string.h
 stdint.h
 -
 
-/homes/ewpeters/Project2_CIS520/src/dyn_array.c
+/homes/cbcerna/cis520/hw2/src/dyn_array.c
 dyn_array.h
-/homes/ewpeters/Project2_CIS520/src/dyn_array.h
+/homes/cbcerna/cis520/hw2/src/dyn_array.h
 

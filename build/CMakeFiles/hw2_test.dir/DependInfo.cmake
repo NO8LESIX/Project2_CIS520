@@ -5,7 +5,7 @@ set(CMAKE_DEPENDS_LANGUAGES
   )
 # The set of files for implicit dependencies of each language:
 set(CMAKE_DEPENDS_CHECK_C
-  "/homes/ewpeters/Project2_CIS520/src/process_scheduling.c" "/homes/ewpeters/Project2_CIS520/build/CMakeFiles/hw2_test.dir/src/process_scheduling.c.o"
+  "/homes/cbcerna/cis520/hw2/src/process_scheduling.c" "/homes/cbcerna/cis520/hw2/build/CMakeFiles/hw2_test.dir/src/process_scheduling.c.o"
   )
 set(CMAKE_C_COMPILER_ID "GNU")
 
@@ -19,7 +19,7 @@ set(CMAKE_C_TARGET_INCLUDE_PATH
   "../include"
   )
 set(CMAKE_DEPENDS_CHECK_CXX
-  "/homes/ewpeters/Project2_CIS520/test/tests.cpp" "/homes/ewpeters/Project2_CIS520/build/CMakeFiles/hw2_test.dir/test/tests.cpp.o"
+  "/homes/cbcerna/cis520/hw2/test/tests.cpp" "/homes/cbcerna/cis520/hw2/build/CMakeFiles/hw2_test.dir/test/tests.cpp.o"
   )
 set(CMAKE_CXX_COMPILER_ID "GNU")
 
@@ -35,7 +35,7 @@ set(CMAKE_CXX_TARGET_INCLUDE_PATH
 
 # Targets to which this target links.
 set(CMAKE_TARGET_LINKED_INFO_FILES
-  "/homes/ewpeters/Project2_CIS520/build/CMakeFiles/dyn_array.dir/DependInfo.cmake"
+  "/homes/cbcerna/cis520/hw2/build/CMakeFiles/dyn_array.dir/DependInfo.cmake"
   )
 
 # Fortran module output directory.

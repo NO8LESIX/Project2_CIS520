@@ -26,7 +26,7 @@ stdint.h
 dyn_array.h
 ../include/dyn_array.h
 
-/homes/ewpeters/Project2_CIS520/src/process_scheduling.c
+/homes/cbcerna/cis520/hw2/src/process_scheduling.c
 fcntl.h
 -
 stdio.h
@@ -36,7 +36,7 @@ string.h
 unistd.h
 -
 dyn_array.h
-/homes/ewpeters/Project2_CIS520/src/dyn_array.h
+/homes/cbcerna/cis520/hw2/src/dyn_array.h
 processing_scheduling.h
-/homes/ewpeters/Project2_CIS520/src/processing_scheduling.h
+/homes/cbcerna/cis520/hw2/src/processing_scheduling.h
 

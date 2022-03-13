@@ -51,6 +51,12 @@ int arrival_calc_helper(const void *pcb1, const void *pcb2) {
     return b - a;
 }
 
+int compare_priorities(const void* pcb1, const void* pcb2){
+    return((ProcessControlBlock_t*)pcb1)->priority > ((ProcessControlBlock_t*)pcb2)->priority ? -1
+        : ((ProcessControlBlock_t*)pcb1)->priority < ((ProcessControlBlock_t*)pcb2)->priority ? 1
+        :  0;
+}
+
 int shortest_burst_time_helper(const void *pcb1, const void *pcb2)
 {
     
@@ -98,35 +104,33 @@ bool first_come_first_serve(dyn_array_t *ready_queue, ScheduleResult_t *result)
 
 bool priority(dyn_array_t *ready_queue, ScheduleResult_t *result) 
 {
-    UNUSED(ready_queue);
-    UNUSED(result);
-    return false;
-    /*if(ready_queue == false || result == false) return false;
-
-    ProcessControlBlock_t pcb;
+    if(ready_queue == false || result == false) return false;
+        ProcessControlBlock_t pcb;
+            
+        //sort priorities of PCBs
+        int (*const compare_priority)(const void*, const void*) = &compare_priorities; //Compare function pointer
+        dyn_array_sort(ready_queue, compare_priority); //Sort by priority
         
-    //compare two priorities of PCBs in method
-    
-    int capacity = (int) dyn_array_size(ready_queue);
-    int burst_time = 0;
-    int wall_time = 0;
-    int latency = 0;    
-    
-    for(int i = 0; i < capacity; i++){
-      latency += burst_time;
-      dyn_array_extract_back(ready_queue, (void*)&pcb);
-      burst_time += pcb.remaining_burst_time;
-      wall_time += burst_time;
-      while(!pcb.remaining_burst_time){
-        virtual_cpu(&pcb);
-      }
-    }
-    
-    result->average_waiting_time = (float)waiting_time / (float)size;
-    result->average_turnaround_time = (float)turnaround_time / (float)size;
-    result->total_run_time = run_time;
-    
-    return true;*/   
+        uint32_t size = dyn_array_size(ready_queue);
+        uint32_t waiting_time = 0;
+        uint32_t turnaround_time = 0;
+        uint32_t run_time = 0;
+        
+        for(uint32_t i = 0; i < size; i++){
+          run_time += waiting_time;
+          dyn_array_extract_back(ready_queue, (void*)&pcb);
+          waiting_time += pcb.remaining_burst_time;
+          turnaround_time += waiting_time;
+          while(!pcb.remaining_burst_time){
+            virtual_cpu(&pcb);
+          }
+        }
+        
+        result->average_waiting_time = (float)waiting_time / size;
+        result->average_turnaround_time = (float)turnaround_time / size;
+        result->total_run_time = run_time;
+        
+        return true;
 }
 
 

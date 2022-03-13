@@ -7,11 +7,11 @@ C_FLAGS = -std=c11 -Wall -Wextra -Wshadow -Werror
 
 C_DEFINES = -DGRAD_TEST=1
 
-C_INCLUDES = -I/homes/ewpeters/Project2_CIS520/include 
+C_INCLUDES = -I/homes/cbcerna/cis520/hw2/include 
 
 CXX_FLAGS = -std=c++11 -Wall -Wextra -Wshadow -Werror  
 
 CXX_DEFINES = -DGRAD_TEST=1
 
-CXX_INCLUDES = -I/homes/ewpeters/Project2_CIS520/include 
+CXX_INCLUDES = -I/homes/cbcerna/cis520/hw2/include 
 

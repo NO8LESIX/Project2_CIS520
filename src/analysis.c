@@ -8,7 +8,8 @@
 #define FCFS "FCFS"
 // I think P is Priority but that's not used so making it PSRJF = Preemtive Shortest Remaining Job First 
 // #OVER ACHIEVER WHERES MY EXTRA CREDIT
-#define P "PSRJF"
+#define P "Priority"
+#define SRTF "SRTF"
 #define RR "RR"
 #define SJF "SJF"
 
@@ -26,8 +27,6 @@ int myAtoi_helper(char *str);
 // \param sr is a pointer to the schedule result struct
 void print_stats_helper(FILE *fp, const char *sr_alg, ScheduleResult_t *sr);
 
-// Add and comment your analysis code in this function.
-// THIS IS NOT FINISHED.
 int main(int argc, char **argv) 
 {
     // check args
@@ -36,9 +35,6 @@ int main(int argc, char **argv)
         printf("%s <pcb file> <schedule algorithm> [quantum]\n", argv[0]);
         return EXIT_FAILURE;
     }
-
-    //abort();  // replace me with implementation.
-
     // load process control blocks with 1st arg
     dyn_array_t *ready_queue = load_process_control_blocks(argv[1]);
     ScheduleResult_t *result = (ScheduleResult_t *)malloc(sizeof(ScheduleResult_t));
@@ -52,8 +48,8 @@ int main(int argc, char **argv)
         // if quantum is provided
         snprintf(rr, 19, "RR: Quantum = %d", (int)quantum);
     } else
-        // set quantum to 4 if not provided
-        snprintf(rr, 19, "RR: Quantum = %d", 4);
+        // set quantum to 5 if not provided (default in process_scheduler)
+        snprintf(rr, 19, "RR: Quantum = %d", 5);
 
     // set up statistics record to be added to readme file
     struct stat stats_record;
@@ -62,44 +58,56 @@ int main(int argc, char **argv)
 
     // set up statistics table header in readme file
     // exsisting characters in readme.md file with my additional note = 957
-    if(stats_record.st_size == 958) {
+    if(stats_record.st_size <= 958) {
         fprintf(fp, "\n\n| Scheduling Algorithm | Average Turnaround Time | Average Waiting Time | Total Clock Time |\n");
         fprintf(fp, "|----------------------|-------------------------|----------------------|------------------|\n");
     }
 
-    // swtich cases for argv 2 input (first letter only)
-    switch(*argv[2]) {
-        // FCFS - First Come First Serve
-        case 'F':
-            if(first_come_first_serve(ready_queue, result))
-                print_stats_helper(fp, FCFS, result);
-            break;
-            // Priority isn't used so just going with it!
-            // PSRTF - Preemtive Shortest Remaining Time First?
-            // AKA function Shortest Remaining Time First
-        case 'P':
-            if(shortest_remaining_time_first(ready_queue, result))
-                print_stats_helper(fp, P, result);
-            break;
-            // RR - Round Robin
-        case 'R':
-            if(argc == 4 && sscanf(argv[3], "%zu", &quantum)) {
-                if(round_robin(ready_queue, result, quantum))
-                    print_stats_helper(fp, rr, result);
-            } else
-                fprintf(stderr, "ERROR: Invalid Quantum Input\n");
-            break;
-            // SJF - Shortest Job First
-        case 'S':
-            if(shortest_job_first(ready_queue, result))
-                print_stats_helper(fp, SJF, result);
-            break;
-            // default case
-        default:
-            printf("%s <pcb file> <schedule algorithm> [quantum]\n", argv[0]);
-            break;
+    // FCFS - First Come First Serve
+    if(strcmp("FCFS", argv[2]) == 0 ){
+        if(first_come_first_serve(ready_queue, result)){
+           print_stats_helper(fp, FCFS, result);
+           printf("FCFS results written\n");
+        }
     }
-
+    // P - Priority
+    else if(strcmp("P", argv[2]) == 0 ){
+        if(priority(ready_queue, result)){
+           print_stats_helper(fp, P, result);
+           printf("Priority results written\n");
+        }
+    }
+    // RR - Round Robin
+    else if(strcmp("RR", argv[2]) == 0 ){
+        if(argc == 4 && sscanf(argv[3], "%zu", &quantum)) {
+            if(round_robin(ready_queue, result, quantum)){
+                print_stats_helper(fp, RR, result);
+                printf("RR results written\n");           
+            }
+        } 
+        else {
+            fprintf(stderr, "ERROR: Invalid Quantum Input\n");
+        }
+    }
+    // SRTF - Shortest Remaining Time First
+    else if(strcmp("SRTF", argv[2]) == 0 ){
+        if(shortest_remaining_time_first(ready_queue, result)){
+           print_stats_helper(fp, SRTF, result);
+           printf("SRTF results written\n");
+        }
+    }
+    // SJF - Shortest Job First
+    else if(strcmp("SJF", argv[2]) == 0 ){
+        if(shortest_job_first(ready_queue, result)){
+           print_stats_helper(fp, SJF, result);
+           printf("SJF results written\n");
+        }
+    }
+    //Default Case
+    else{
+        printf("%s <pcb file> <schedule algorithm> [quantum]\n", argv[0]);
+    }
+    
     // clean up
     fclose(fp);
     dyn_array_destroy(ready_queue);

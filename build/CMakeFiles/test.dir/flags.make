@@ -6,5 +6,5 @@ CXX_FLAGS = -std=c++11 -Wall -Wextra -Wshadow -Werror -fPIC
 
 CXX_DEFINES = -Dtest_EXPORTS
 
-CXX_INCLUDES = -I/homes/ewpeters/Project2_CIS520/include 
+CXX_INCLUDES = -I/homes/cbcerna/cis520/hw2/include 
 
