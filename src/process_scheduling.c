@@ -98,6 +98,9 @@ bool first_come_first_serve(dyn_array_t *ready_queue, ScheduleResult_t *result)
     result->average_waiting_time = (float)waiting_time / (float)size;
     result->average_turnaround_time = (float)turnaround_time / (float)size;
     result->total_run_time = run_time;
+    
+    
+    //printf("| %-20s | %-23f | %-20f | %-16lu |\n", "fcfs", result->average_turnaround_time, result->average_waiting_time, result->total_run_time);
 
     return true;
 }
