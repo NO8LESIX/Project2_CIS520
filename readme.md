@@ -12,11 +12,6 @@ You can manually copy the time analysis from console and paste it to this readme
 Add your scheduling algorithm analysis below this line in a readable format. 
 ---------------------------------------------------------------------------
 
-
-| Scheduling Algorithm | Average Turnaround Time | Average Waiting Time | Total Clock Time |
-|----------------------|-------------------------|----------------------|------------------|
-
-
 | Scheduling Algorithm | Average Turnaround Time | Average Waiting Time | Total Clock Time |
 |----------------------|-------------------------|----------------------|------------------|
 | RR                   | 0.000000                | 0.000000             | 0                |
