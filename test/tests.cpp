@@ -108,6 +108,7 @@ TEST (first_come_first_serve, HasGoodInputA)
     bool res = first_come_first_serve (ready_queue,result);	
     ASSERT_EQ(true,res);
     float answers[3] = {27,17,30};
+    //assert expected is what is stored in result and clean up
     ASSERT_EQ(answers[0],result->average_turnaround_time);
     ASSERT_EQ(answers[1],result->average_waiting_time);
     ASSERT_EQ(answers[2],result->total_run_time);
@@ -133,6 +134,7 @@ TEST (first_come_first_serve, HasGoodInputB)
     bool res = first_come_first_serve (ready_queue,result);	
     ASSERT_EQ(true,res);
     float answers[3] = {16.25,10.25,24};
+    //assert expected is what is stored in result and clean up
     ASSERT_EQ(answers[0],result->average_turnaround_time);
     ASSERT_EQ(answers[1],result->average_waiting_time);
     ASSERT_EQ(answers[2],result->total_run_time);
@@ -176,6 +178,7 @@ TEST (shortest_job_first, GoodInputA)
     bool res = shortest_job_first (ready_queue,result);	
     ASSERT_EQ(true,res);
     float answers[3] = {26.25,18.25,32};
+    //assert expected is what is stored in result and clean up
     ASSERT_EQ(answers[0],result->average_turnaround_time);
     ASSERT_EQ(answers[1],result->average_waiting_time);
     ASSERT_EQ(answers[2],result->total_run_time);
@@ -218,6 +221,7 @@ TEST (shortest_remaining_time_first, GoodInputA)
     bool res = shortest_remaining_time_first (ready_queue,result);	
     ASSERT_EQ(true,res);
     float answers[3] = {10.25,2.25,32};
+    //assert expected is what is stored in result and clean up
     ASSERT_EQ(answers[0],result->average_turnaround_time);
     ASSERT_EQ(answers[1],result->average_waiting_time);
     ASSERT_EQ(answers[2],result->total_run_time);
@@ -259,6 +263,7 @@ TEST (round_robin, GoodInputA)
     bool res = round_robin (ready_queue,result,QUANTUM1);	
     ASSERT_EQ(true,res);
     float answers[3] = {15.666667,5.666667,30};
+    //assert expected is what is stored in result and clean up
     ASSERT_FLOAT_EQ(answers[0],result->average_turnaround_time);
     ASSERT_FLOAT_EQ(answers[1],result->average_waiting_time);
     ASSERT_EQ(answers[2],result->total_run_time);
@@ -284,6 +289,7 @@ TEST (round_robin, GoodInputB)
     bool res = round_robin (ready_queue,result,QUANTUM2);  
     ASSERT_EQ(true,res);
     float answers[3] = {26.25,15.75,42};
+    //assert expected is what is stored in result and clean up
     ASSERT_FLOAT_EQ(answers[0],result->average_turnaround_time);
     ASSERT_EQ(answers[1],result->average_waiting_time);
     ASSERT_EQ(answers[2],result->total_run_time);
