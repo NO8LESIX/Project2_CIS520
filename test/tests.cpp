@@ -8,76 +8,61 @@ extern "C"
 {
 #include <dyn_array.h>
 }
-
-
 #define NUM_PCB 30
-#define QUANTUM1 4 // Used for Robin Round for process as the run time limit
-#define QUANTUM2 5 // Used for Robin Round for process as the run time limit
+#define QUANTUM1 4
+#define QUANTUM2 5
 
 unsigned int score;
 unsigned int total;
 
 /*
  * LOAD PROCESS CONTROL BLOCKS TEST CASES
- *
- * dyn_array_t *load_process_control_blocks(const char *input_file); 
- *
  */
-
-// my original test cases without score included
 TEST (load_process_control_blocks, NullFilePath) {
-    dyn_array_t *da = load_process_control_blocks(NULL);
-    ASSERT_EQ(da, (dyn_array_t*) NULL);
+    dyn_array_t *ready_queue = load_process_control_blocks(NULL);
+    ASSERT_EQ(ready_queue, (dyn_array_t*) NULL);
 }
 
-TEST (load_process_control_blocks, TrickyBadFileName) {
+TEST (load_process_control_blocks, FileNameIsEmpty) {
     const char *filename = "";
-    dyn_array_t *da = load_process_control_blocks(filename);
-    ASSERT_EQ(da, (dyn_array_t*) NULL);
+    dyn_array_t *ready_queue = load_process_control_blocks(filename);
+    ASSERT_EQ(ready_queue, (dyn_array_t*) NULL);
 }
-
-TEST (load_process_control_blocks, TrickyBadFileNameNewLine) {
+TEST (load_process_control_blocks, FileNameIsNewLine) {
     const char *filename = "\n";
-    dyn_array_t *da = load_process_control_blocks(filename);
-    ASSERT_EQ(da, (dyn_array_t*) NULL);
+    dyn_array_t *ready_queue = load_process_control_blocks(filename);
+    ASSERT_EQ(ready_queue, (dyn_array_t*) NULL);
 }
-
-TEST (load_process_control_blocks, EmptyFile) {
-    const char *filename = "JIMRTESTANSWERS.JK";    // wish this was a real file
+TEST (load_process_control_blocks, FileIsEmpty) {
+    const char *filename = "EmptyFile.EMPTY";
     int fd = open(filename, O_RDWR | O_CREAT, S_IRUSR | S_IRGRP | S_IROTH);
     close(fd);
-    dyn_array_t *da = load_process_control_blocks(filename);
-    ASSERT_EQ(da, (dyn_array_t*) NULL);
+    dyn_array_t *ready_queue = load_process_control_blocks(filename);
+    ASSERT_EQ(ready_queue, (dyn_array_t*) NULL);
 }
-
-// begin jimr's tests
-TEST (load_process_control_blocks, nullFilePath) 
+TEST (load_process_control_blocks, FilePathIsNull) 
 {
-    dyn_array_t* da = load_process_control_blocks (NULL);
-    ASSERT_EQ(da,(dyn_array_t*) NULL);
+    dyn_array_t* ready_queue = load_process_control_blocks (NULL);
+    ASSERT_EQ(ready_queue,(dyn_array_t*) NULL);
 }
-
-TEST (load_process_control_blocks, notFoundFile) 
+TEST (load_process_control_blocks, FileNotFound) 
 {
-
-    dyn_array_t* da = load_process_control_blocks ("NotARealFile.Awesome");
-    ASSERT_EQ(da,(dyn_array_t*)NULL);
+    dyn_array_t* ready_queue = load_process_control_blocks ("FileNotFound.txt");
+    ASSERT_EQ(ready_queue,(dyn_array_t*)NULL);
 }
-
-TEST (load_process_control_blocks, emptyFoundFile) 
+TEST (load_process_control_blocks, FoundFileIsEmptyWithFlags) 
 {
-    const char* fname = "EMPTYFILE.DARN";
+    const char* fname = "Empty.File";
     mode_t mode = S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP;
     int flags = O_CREAT | O_TRUNC | O_WRONLY;
     int fd = open(fname, flags, mode);
     close(fd);
-    dyn_array_t* da = load_process_control_blocks (fname);
-    ASSERT_EQ(da,(dyn_array_t*)NULL);
+    dyn_array_t* ready_queue = load_process_control_blocks (fname);
+    ASSERT_EQ(ready_queue,(dyn_array_t*)NULL);
 }
-
-TEST (load_process_control_blocks, incorrectPCBFoundFile) 
+TEST (load_process_control_blocks, PCBFileHasBadInput) 
 {
-    const char* fname = "CANYOUHANDLETHE.TRUTH";
+    const char* fname = "BadInput.Data";
     uint32_t pcb_num = 10;
     uint32_t pcbs[5][3] = {{1,1,1},{2,2,2},{3,3,3},{4,4,4},{5,5,5}};
     mode_t mode = S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP;
@@ -86,116 +71,54 @@ TEST (load_process_control_blocks, incorrectPCBFoundFile)
     write(fd,&pcb_num,sizeof(uint32_t));
     write(fd,pcbs,5 * sizeof(uint32_t)*3);
     close(fd);
-    dyn_array_t* da = load_process_control_blocks (fname);
-    ASSERT_EQ(da,(dyn_array_t*)NULL);
+    dyn_array_t* ready_queue = load_process_control_blocks (fname);
+    ASSERT_EQ(ready_queue,(dyn_array_t*)NULL);
 }
-
-TEST (load_process_control_blocks, fullFoundFile) 
-{
-    const char* fname = "PCBs.bin";
-    uint32_t pcb_num = NUM_PCB;
-    uint32_t pcbs[NUM_PCB][3];
-    for (uint32_t p = 0; p < pcb_num; ++p) 
-    {
-        pcbs[p][0] = rand() % 35 + 1;
-        //        printf("%d, ", pcbs[p][0]);
-        pcbs[p][1] = p;
-        pcbs[p][2] = p;
-    }
-    mode_t mode = S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP;
-    int flags = O_CREAT | O_TRUNC | O_WRONLY;
-    int fd = open(fname, flags, mode);
-    write(fd,&pcb_num,sizeof(uint32_t));
-    write(fd,pcbs,pcb_num * sizeof(uint32_t)*3);
-    close(fd);
-    dyn_array_t* da = load_process_control_blocks (fname);
-    ASSERT_NE(da, (dyn_array_t*) NULL);
-    for (size_t i = 0; i < dyn_array_size(da); ++i) 
-    {
-        ProcessControlBlock_t * pPCB = (ProcessControlBlock_t *)dyn_array_at(da, i);
-        ASSERT_EQ(pPCB->remaining_burst_time, pcbs[i][0]);
-        ASSERT_EQ(pPCB->priority, pcbs[i][1]);
-        ASSERT_EQ(pPCB->arrival, pcbs[i][2]);
-    }
-    dyn_array_destroy(da);
-}
-
-
 /*
- * * First Come First Served  TEST CASES
- *
- * bool first_come_first_serve(dyn_array_t *ready_queue, ScheduleResult_t *result);
- *
+ * First Come First Served TEST CASES
  */
-
-// my original test cases without score included
-TEST (first_come_first_serve, NullReadyQueue) {
-    ScheduleResult_t *sr = new ScheduleResult_t;
-    dyn_array_t *da = NULL;
-    bool res = first_come_first_serve(da, sr);
+TEST (first_come_first_serve, ReadyQueueIsNull) {
+    ScheduleResult_t *result = new ScheduleResult_t;
+    dyn_array_t *ready_queue = NULL;
+    bool res = first_come_first_serve(ready_queue, result);
     ASSERT_EQ(false, res);
-    delete sr;
+    delete result;
 }
-
-TEST (first_come_first_serve, NullScheduleResult) {
-    ScheduleResult_t *sr = NULL;
-    dyn_array_t* da = dyn_array_create(0, sizeof(ProcessControlBlock_t), NULL);
-    bool res = first_come_first_serve(da, sr);
+TEST (first_come_first_serve, ScheduleResultIsNull) {
+    ScheduleResult_t *result = NULL;
+    dyn_array_t* ready_queue = dyn_array_create(0, sizeof(ProcessControlBlock_t), NULL);
+    bool res = first_come_first_serve(ready_queue, result);
     ASSERT_EQ(false, res);
-    dyn_array_destroy(da);
+    dyn_array_destroy(ready_queue);
 }
-
-// begin jimr's tests
-TEST (first_come_first_serve, nullInputProcessControlBlockDynArray) 
+TEST (first_come_first_serve, HasGoodInputA) 
 {
-    ScheduleResult_t *sr = new ScheduleResult_t;
-    dyn_array_t* pcbs = NULL;
-    bool res = first_come_first_serve (pcbs,sr);
-    ASSERT_EQ(false,res);
-    delete sr;
-}
-
-TEST (first_come_first_serve, nullScheduleResult) 
-{
-    ScheduleResult_t *sr = NULL;
-    dyn_array_t* pcbs = dyn_array_create(0,sizeof(ProcessControlBlock_t),NULL);
-    bool res = first_come_first_serve (pcbs,sr);
-    ASSERT_EQ(false,res);
-    dyn_array_destroy(pcbs);
-}
-
-TEST (first_come_first_serve, goodInputA) 
-{
-    ScheduleResult_t *sr = new ScheduleResult_t;
-    dyn_array_t* pcbs = dyn_array_create(0,sizeof(ProcessControlBlock_t),NULL);
-    memset(sr,0,sizeof(ScheduleResult_t));
-    // add PCBs now
+    ScheduleResult_t *result = new ScheduleResult_t;
+    dyn_array_t* ready_queue = dyn_array_create(0,sizeof(ProcessControlBlock_t),NULL);
+    memset(result,0,sizeof(ScheduleResult_t));
     ProcessControlBlock_t data[3] = 
     {
         [0] = {24,2,0,0},
         [1] = {3,3,0,0},
         [2] = {3,1,0,0}
     };
-    // back loading dyn_array, pull from the back
-    dyn_array_push_back(pcbs,&data[2]);
-    dyn_array_push_back(pcbs,&data[1]);
-    dyn_array_push_back(pcbs,&data[0]);	
-    bool res = first_come_first_serve (pcbs,sr);	
+    dyn_array_push_back(ready_queue,&data[2]);
+    dyn_array_push_back(ready_queue,&data[1]);
+    dyn_array_push_back(ready_queue,&data[0]);	
+    bool res = first_come_first_serve (ready_queue,result);	
     ASSERT_EQ(true,res);
     float answers[3] = {27,17,30};
-    ASSERT_EQ(answers[0],sr->average_turnaround_time);
-    ASSERT_EQ(answers[1],sr->average_waiting_time);
-    ASSERT_EQ(answers[2],sr->total_run_time);
-    dyn_array_destroy(pcbs);
-    delete sr;
+    ASSERT_EQ(answers[0],result->average_turnaround_time);
+    ASSERT_EQ(answers[1],result->average_waiting_time);
+    ASSERT_EQ(answers[2],result->total_run_time);
+    dyn_array_destroy(ready_queue);
+    delete result;
 }
-
-TEST (first_come_first_serve, goodInputB) 
+TEST (first_come_first_serve, HasGoodInputB) 
 {
-    ScheduleResult_t *sr = new ScheduleResult_t;
-    dyn_array_t* pcbs = dyn_array_create(0,sizeof(ProcessControlBlock_t),NULL);
-    memset(sr,0,sizeof(ScheduleResult_t));
-    // add PCBs now
+    ScheduleResult_t *result = new ScheduleResult_t;
+    dyn_array_t* ready_queue = dyn_array_create(0,sizeof(ProcessControlBlock_t),NULL);
+    memset(result,0,sizeof(ScheduleResult_t));
     ProcessControlBlock_t data[4] = 
     {
         [0] = {6,3,0,0},
@@ -203,73 +126,42 @@ TEST (first_come_first_serve, goodInputB)
         [2] = {7,4,0,0},
         [3] = {3,1,0,0},
     };
-    // back loading dyn_array, pull from the back
-    dyn_array_push_back(pcbs,&data[3]);
-    dyn_array_push_back(pcbs,&data[2]);
-    dyn_array_push_back(pcbs,&data[1]);		
-    dyn_array_push_back(pcbs,&data[0]);	
-    bool res = first_come_first_serve (pcbs,sr);	
+    dyn_array_push_back(ready_queue,&data[3]);
+    dyn_array_push_back(ready_queue,&data[2]);
+    dyn_array_push_back(ready_queue,&data[1]);		
+    dyn_array_push_back(ready_queue,&data[0]);	
+    bool res = first_come_first_serve (ready_queue,result);	
     ASSERT_EQ(true,res);
     float answers[3] = {16.25,10.25,24};
-    ASSERT_EQ(answers[0],sr->average_turnaround_time);
-    ASSERT_EQ(answers[1],sr->average_waiting_time);
-    ASSERT_EQ(answers[2],sr->total_run_time);
-    dyn_array_destroy(pcbs);
-    delete sr;
+    ASSERT_EQ(answers[0],result->average_turnaround_time);
+    ASSERT_EQ(answers[1],result->average_waiting_time);
+    ASSERT_EQ(answers[2],result->total_run_time);
+    dyn_array_destroy(ready_queue);
+    delete result;
 }
-
-
-
 /*
- * * Shortest Job First  TEST CASES
- *
- * bool shortest_job_first(dyn_array_t *ready_queue, ScheduleResult_t *result);
- * 
+ * Shortest Job First TEST CASES
  */
-
-// my orignal test cases without score included
-
-TEST (shortest_job_first, NullReadyQueue) {
-    ScheduleResult_t *sr = new ScheduleResult_t;
-    dyn_array_t *da = NULL;
-    bool res = shortest_job_first(da, sr);
+TEST (shortest_job_first, ReadyQueueIsNull) {
+    ScheduleResult_t *result = new ScheduleResult_t;
+    dyn_array_t *ready_queue = NULL;
+    bool res = shortest_job_first(ready_queue, result);
     ASSERT_EQ(false, res);
-    delete sr;
+    delete result;
 }
-
-TEST (shortest_job_first, NullScheduleResult) {
-    ScheduleResult_t *sr = NULL;
-    dyn_array_t *da = dyn_array_create(0, sizeof(ProcessControlBlock_t), NULL);
-    bool res = shortest_job_first(da, sr);
-    ASSERT_EQ(false, res);
-    dyn_array_destroy(da);
-}
-
-// begin jimr's tests
-TEST (shortest_job_first, nullInputProcessControlBlockDynArray) 
+TEST (shortest_job_first, ScheduleResultIsNull) 
 {
-    ScheduleResult_t *sr = new ScheduleResult_t;
-    dyn_array_t* pcbs = NULL;
-    bool res = shortest_job_first (pcbs,sr);
+    ScheduleResult_t *result = NULL;
+    dyn_array_t* ready_queue = dyn_array_create(0,sizeof(ProcessControlBlock_t),NULL);
+    bool res = shortest_job_first (ready_queue,result);
     ASSERT_EQ(false,res);
-    delete sr;
+    dyn_array_destroy(ready_queue);
 }
-
-TEST (shortest_job_first, nullScheduleResult) 
+TEST (shortest_job_first, GoodInputA) 
 {
-    ScheduleResult_t *sr = NULL;
-    dyn_array_t* pcbs = dyn_array_create(0,sizeof(ProcessControlBlock_t),NULL);
-    bool res = shortest_job_first (pcbs,sr);
-    ASSERT_EQ(false,res);
-    dyn_array_destroy(pcbs);
-}
-
-TEST (shortest_job_first, goodInput) 
-{
-    ScheduleResult_t *sr = new ScheduleResult_t;
-    dyn_array_t* pcbs = dyn_array_create(0,sizeof(ProcessControlBlock_t),NULL);
-    memset(sr,0,sizeof(ScheduleResult_t));
-    // add PCBs now
+    ScheduleResult_t *result = new ScheduleResult_t;
+    dyn_array_t* ready_queue = dyn_array_create(0,sizeof(ProcessControlBlock_t),NULL);
+    memset(result,0,sizeof(ScheduleResult_t));
     ProcessControlBlock_t data[4] = 
     {
         [0] = {25,2,0,0},
@@ -277,72 +169,41 @@ TEST (shortest_job_first, goodInput)
         [2] = {4,1,2,0},
         [3] = {1,4,3,0},
     };
-    // back loading dyn_array, pull from the back
-    dyn_array_push_back(pcbs,&data[3]);
-    dyn_array_push_back(pcbs,&data[2]);
-    dyn_array_push_back(pcbs,&data[1]);
-    dyn_array_push_back(pcbs,&data[0]);	
-    bool res = shortest_job_first (pcbs,sr);	
+    dyn_array_push_back(ready_queue,&data[3]);
+    dyn_array_push_back(ready_queue,&data[2]);
+    dyn_array_push_back(ready_queue,&data[1]);
+    dyn_array_push_back(ready_queue,&data[0]);	
+    bool res = shortest_job_first (ready_queue,result);	
     ASSERT_EQ(true,res);
     float answers[3] = {26.25,18.25,32};
-    ASSERT_EQ(answers[0],sr->average_turnaround_time);
-    ASSERT_EQ(answers[1],sr->average_waiting_time);
-    ASSERT_EQ(answers[2],sr->total_run_time);
-    dyn_array_destroy(pcbs);
-    delete sr;
+    ASSERT_EQ(answers[0],result->average_turnaround_time);
+    ASSERT_EQ(answers[1],result->average_waiting_time);
+    ASSERT_EQ(answers[2],result->total_run_time);
+    dyn_array_destroy(ready_queue);
+    delete result;
 }
-
-
 /*
  * * Shortest Remaining Time First  TEST CASES
- *
- * bool shortest_remaining_time_first(dyn_array_t *ready_queue, ScheduleResult_t *result);
- *
  */
-
-// my tests cases without score included
-
-TEST (shortest_remaining_time_first, NullReadyQueue) {
-    ScheduleResult_t *sr = new ScheduleResult_t;
-    dyn_array_t *da = NULL;
-    bool res = shortest_remaining_time_first(da, sr);
+TEST (shortest_remaining_time_first, ReadyQueueIsNull) {
+    ScheduleResult_t *result = new ScheduleResult_t;
+    dyn_array_t *ready_queue = NULL;
+    bool res = shortest_remaining_time_first(ready_queue, result);
     ASSERT_EQ(false, res);
-    delete sr;
+    delete result;
 }
-
-TEST (shortest_remaining_time_first, NullScheduleResult) {
-    ScheduleResult_t *sr = NULL;
-    dyn_array_t *da = dyn_array_create(0, sizeof(ProcessControlBlock_t), NULL);
-    bool res = shortest_remaining_time_first(da, sr);
+TEST (shortest_remaining_time_first, ScheduleResultIsNull) {
+    ScheduleResult_t *result = NULL;
+    dyn_array_t *ready_queue = dyn_array_create(0, sizeof(ProcessControlBlock_t), NULL);
+    bool res = shortest_remaining_time_first(ready_queue, result);
     ASSERT_EQ(false, res);
-    dyn_array_destroy(da);
+    dyn_array_destroy(ready_queue);
 }
-
-// begin jimr's tests
-TEST (shortest_remaining_time_first, nullInputProcessControlBlockDynArray) 
+TEST (shortest_remaining_time_first, GoodInputA) 
 {
-    ScheduleResult_t *sr = new ScheduleResult_t;
-    dyn_array_t* pcbs = NULL;
-    bool res = shortest_remaining_time_first (pcbs,sr);
-    ASSERT_EQ(false,res);
-    delete sr;
-}
-
-TEST (shortest_remaining_time_first, nullScheduleResult) 
-{
-    ScheduleResult_t *sr = NULL;
-    dyn_array_t* pcbs = dyn_array_create(0,sizeof(ProcessControlBlock_t),NULL);
-    bool res = shortest_remaining_time_first (pcbs,sr);
-    ASSERT_EQ(false,res);
-    dyn_array_destroy(pcbs);
-}
-
-TEST (shortest_remaining_time_first, goodInput) 
-{
-    ScheduleResult_t *sr = new ScheduleResult_t;
-    dyn_array_t* pcbs = dyn_array_create(0,sizeof(ProcessControlBlock_t),NULL);
-    memset(sr,0,sizeof(ScheduleResult_t));
-    // add PCBs now
+    ScheduleResult_t *result = new ScheduleResult_t;
+    dyn_array_t* ready_queue = dyn_array_create(0,sizeof(ProcessControlBlock_t),NULL);
+    memset(result,0,sizeof(ScheduleResult_t));
     ProcessControlBlock_t data[4] = 
     {
         [0] = {25,2,0,0},
@@ -350,98 +211,65 @@ TEST (shortest_remaining_time_first, goodInput)
         [2] = {4,1,2,0},
         [3] = {1,4,3,0},
     };
-    // back loading dyn_array, pull from the back
-    dyn_array_push_back(pcbs,&data[3]);
-    dyn_array_push_back(pcbs,&data[2]);
-    dyn_array_push_back(pcbs,&data[1]);
-    dyn_array_push_back(pcbs,&data[0]);	
-    bool res = shortest_remaining_time_first (pcbs,sr);	
+    dyn_array_push_back(ready_queue,&data[3]);
+    dyn_array_push_back(ready_queue,&data[2]);
+    dyn_array_push_back(ready_queue,&data[1]);
+    dyn_array_push_back(ready_queue,&data[0]);	
+    bool res = shortest_remaining_time_first (ready_queue,result);	
     ASSERT_EQ(true,res);
     float answers[3] = {10.25,2.25,32};
-    ASSERT_EQ(answers[0],sr->average_turnaround_time);
-    ASSERT_EQ(answers[1],sr->average_waiting_time);
-    ASSERT_EQ(answers[2],sr->total_run_time);
-    dyn_array_destroy(pcbs);
-    delete sr;
+    ASSERT_EQ(answers[0],result->average_turnaround_time);
+    ASSERT_EQ(answers[1],result->average_waiting_time);
+    ASSERT_EQ(answers[2],result->total_run_time);
+    dyn_array_destroy(ready_queue);
+    delete result;
 }
-
-
-
 /*
  * ROUND ROBIN TEST CASES
- *
- * bool round_robin(dyn_array_t *ready_queue, ScheduleResult_t *result, size_t quantum);
- *
  */
-
-
-TEST (round_robin, NullReadyQueue) {
-    ScheduleResult_t *sr = new ScheduleResult_t;
-    dyn_array_t *da = NULL;
-    bool res = round_robin(da, sr, QUANTUM1);
+TEST (round_robin, ReadyQueueIsNull) {
+    ScheduleResult_t *result = new ScheduleResult_t;
+    dyn_array_t *ready_queue = NULL;
+    bool res = round_robin(ready_queue, result, QUANTUM1);
     ASSERT_EQ(false, res);
-    dyn_array_destroy(da);
+    dyn_array_destroy(ready_queue);
 }
 
-TEST (round_robin, NullScheduleResult) {
-    ScheduleResult_t *sr = NULL;
-    dyn_array_t *da = dyn_array_create(0, sizeof(ProcessControlBlock_t), NULL);
-    bool res = round_robin(da, sr, QUANTUM1);
+TEST (round_robin, ScheduleResultIsNull) {
+    ScheduleResult_t *result = NULL;
+    dyn_array_t *ready_queue = dyn_array_create(0, sizeof(ProcessControlBlock_t), NULL);
+    bool res = round_robin(ready_queue, result, QUANTUM1);
     ASSERT_EQ(false, res);
-    dyn_array_destroy(da);
+    dyn_array_destroy(ready_queue);
 }
-
-// begin jimr's tests
-TEST (round_robin, nullInputProcessControlBlockDynArray) 
+TEST (round_robin, GoodInputA) 
 {
-    ScheduleResult_t *sr = new ScheduleResult_t;
-    dyn_array_t* pcbs = NULL;
-    bool res = round_robin (pcbs,sr,QUANTUM1);
-    ASSERT_EQ(false,res);
-    delete sr;
-}
-
-TEST (round_robin, nullScheduleResult) 
-{
-    ScheduleResult_t *sr = NULL;
-    dyn_array_t* pcbs = dyn_array_create(0,sizeof(ProcessControlBlock_t),NULL);
-    bool res = round_robin (pcbs,sr,QUANTUM1);
-    ASSERT_EQ(false,res);
-    dyn_array_destroy(pcbs);
-}
-
-TEST (round_robin, goodInputA) 
-{
-    ScheduleResult_t *sr = new ScheduleResult_t;
-    dyn_array_t* pcbs = dyn_array_create(0,sizeof(ProcessControlBlock_t),NULL);
-    memset(sr,0,sizeof(ScheduleResult_t));
-    // add PCBs now
+    ScheduleResult_t *result = new ScheduleResult_t;
+    dyn_array_t* ready_queue = dyn_array_create(0,sizeof(ProcessControlBlock_t),NULL);
+    memset(result,0,sizeof(ScheduleResult_t));
     ProcessControlBlock_t data[3] = 
     {
         [0] = {24,4,0,0},
         [1] = {3,2,0,0},
         [2] = {3,1,0,0}
     };
-    // back loading dyn_array, pull from the back
-    dyn_array_push_back(pcbs,&data[2]);
-    dyn_array_push_back(pcbs,&data[1]);
-    dyn_array_push_back(pcbs,&data[0]);	
-    bool res = round_robin (pcbs,sr,QUANTUM1);	
+    dyn_array_push_back(ready_queue,&data[2]);
+    dyn_array_push_back(ready_queue,&data[1]);
+    dyn_array_push_back(ready_queue,&data[0]);	
+    bool res = round_robin (ready_queue,result,QUANTUM1);	
     ASSERT_EQ(true,res);
     float answers[3] = {15.666667,5.666667,30};
-    ASSERT_FLOAT_EQ(answers[0],sr->average_turnaround_time);
-    ASSERT_FLOAT_EQ(answers[1],sr->average_waiting_time);
-    ASSERT_EQ(answers[2],sr->total_run_time);
-    dyn_array_destroy(pcbs);
-    delete sr;
+    ASSERT_FLOAT_EQ(answers[0],result->average_turnaround_time);
+    ASSERT_FLOAT_EQ(answers[1],result->average_waiting_time);
+    ASSERT_EQ(answers[2],result->total_run_time);
+    dyn_array_destroy(ready_queue);
+    delete result;
 }
-
-TEST (round_robin, goodInputB) 
+TEST (round_robin, GoodInputB) 
 {
-    ScheduleResult_t *sr = new ScheduleResult_t;
-    dyn_array_t* pcbs = dyn_array_create(0,sizeof(ProcessControlBlock_t),NULL);
-    memset(sr,0,sizeof(ScheduleResult_t));
-    // add PCBs now
+    ScheduleResult_t *result = new ScheduleResult_t;
+    dyn_array_t* ready_queue = dyn_array_create(0,sizeof(ProcessControlBlock_t),NULL);
+    memset(result,0,sizeof(ScheduleResult_t));
     ProcessControlBlock_t data[4] = 
     {
         [0] = {20,1,0,0},
@@ -449,22 +277,20 @@ TEST (round_robin, goodInputB)
         [2] = {6,3,0,0},
         [3] = {11,4,14,0}
     };
-    // back loading dyn_array, pull from the back
-    dyn_array_push_back(pcbs,&data[3]);
-    dyn_array_push_back(pcbs,&data[2]);
-    dyn_array_push_back(pcbs,&data[1]);     
-    dyn_array_push_back(pcbs,&data[0]); 
-    bool res = round_robin (pcbs,sr,QUANTUM2);  
+    dyn_array_push_back(ready_queue,&data[3]);
+    dyn_array_push_back(ready_queue,&data[2]);
+    dyn_array_push_back(ready_queue,&data[1]);     
+    dyn_array_push_back(ready_queue,&data[0]); 
+    bool res = round_robin (ready_queue,result,QUANTUM2);  
     ASSERT_EQ(true,res);
     float answers[3] = {26.25,15.75,42};
-    ASSERT_FLOAT_EQ(answers[0],sr->average_turnaround_time);
-    ASSERT_EQ(answers[1],sr->average_waiting_time);
-    ASSERT_EQ(answers[2],sr->total_run_time);
-    dyn_array_destroy(pcbs);
-    delete sr;
-} 
-
-
+    ASSERT_FLOAT_EQ(answers[0],result->average_turnaround_time);
+    ASSERT_EQ(answers[1],result->average_waiting_time);
+    ASSERT_EQ(answers[2],result->total_run_time);
+    dyn_array_destroy(ready_queue);
+    delete result;
+}
+//came with the tests by default so just left it in/not touching it
 class GradeEnvironment : public testing::Environment 
 {
     public:

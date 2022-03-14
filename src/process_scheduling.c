@@ -6,10 +6,6 @@
 #include "dyn_array.h"
 #include "processing_scheduling.h"
 
-
-// You might find this handy.  I put it around unused parameters, but you should
-// remove it before you submit. Just allows things to compile initially.
-#define UNUSED(x) (void)(x)
 #define QUANTUM 5
 
 // private function
@@ -19,12 +15,12 @@ void virtual_cpu(ProcessControlBlock_t *process_control_block)
     --process_control_block->remaining_burst_time;
 }
 
-int burst_time_calc_helper(const void *pcb1, const void *pcb2) {
+int burst_time_calculator(const void *pcb1, const void *pcb2) {
 
     return ((ProcessControlBlock_t *)pcb1)->remaining_burst_time - ((ProcessControlBlock_t *)pcb2)->remaining_burst_time;
 }
 
-void pcb_queue_helper(dyn_array_t *ready_queue, dyn_array_t *dyn_arr_queue, uint32_t run_time) {
+void pcb_queuer(dyn_array_t *ready_queue, dyn_array_t *dyn_arr_queue, uint32_t run_time) {
     size_t size = dyn_array_size(ready_queue);
     for(size_t i = 0; i < size; i++) {
         ProcessControlBlock_t pcb;
@@ -36,13 +32,13 @@ void pcb_queue_helper(dyn_array_t *ready_queue, dyn_array_t *dyn_arr_queue, uint
     }
 }
 
-void pcb_queue_sort_by_time_helper(dyn_array_t *ready_queue, dyn_array_t *dyn_arr_queue, uint32_t run_time) {
+void pcb_queue_sort_by_time(dyn_array_t *ready_queue, dyn_array_t *dyn_arr_queue, uint32_t run_time) {
     
-    pcb_queue_helper(ready_queue, dyn_arr_queue, run_time);
-    dyn_array_sort(dyn_arr_queue, burst_time_calc_helper);
+    pcb_queuer(ready_queue, dyn_arr_queue, run_time);
+    dyn_array_sort(dyn_arr_queue, burst_time_calculator);
 }
 
-int arrival_calc_helper(const void *pcb1, const void *pcb2) {
+int pcb_compare_burst_time(const void *pcb1, const void *pcb2) {
     
     uint32_t a = ((ProcessControlBlock_t *)pcb1)->arrival;
     uint32_t b = ((ProcessControlBlock_t *)pcb2)->arrival;
@@ -57,7 +53,7 @@ int compare_priorities(const void* pcb1, const void* pcb2){
         :  0;
 }
 
-int shortest_burst_time_helper(const void *pcb1, const void *pcb2)
+int get_shorter_burst_time(const void *pcb1, const void *pcb2)
 {
     
     if (((ProcessControlBlock_t *)pcb1)->remaining_burst_time > ((ProcessControlBlock_t *)pcb2)->remaining_burst_time)
@@ -72,7 +68,6 @@ bool first_come_first_serve(dyn_array_t *ready_queue, ScheduleResult_t *result)
    if(!ready_queue || !result)
         return false;
 
-    // initialize variables
     uint32_t size = dyn_array_size(ready_queue);
     uint32_t waiting_time = 0;
     uint32_t turnaround_time = 0;
@@ -80,9 +75,7 @@ bool first_come_first_serve(dyn_array_t *ready_queue, ScheduleResult_t *result)
 
     ProcessControlBlock_t pcb;
 
-    // while size has not been capped
     for(uint32_t i = 0; i < size; i++) {
-        // update variables
         waiting_time += run_time;
         dyn_array_extract_back(ready_queue, (void *)&pcb);
         run_time += pcb.remaining_burst_time;
@@ -94,14 +87,10 @@ bool first_come_first_serve(dyn_array_t *ready_queue, ScheduleResult_t *result)
             virtual_cpu(&pcb);
     }
 
-    // calculate and set results
     result->average_waiting_time = (float)waiting_time / (float)size;
     result->average_turnaround_time = (float)turnaround_time / (float)size;
     result->total_run_time = run_time;
     
-    
-    //printf("| %-20s | %-23f | %-20f | %-16lu |\n", "fcfs", result->average_turnaround_time, result->average_waiting_time, result->total_run_time);
-
     return true;
 }
 
@@ -110,9 +99,8 @@ bool priority(dyn_array_t *ready_queue, ScheduleResult_t *result)
     if(ready_queue == false || result == false) return false;
         ProcessControlBlock_t pcb;
             
-        //sort priorities of PCBs
-        int (*const compare_priority)(const void*, const void*) = &compare_priorities; //Compare function pointer
-        dyn_array_sort(ready_queue, compare_priority); //Sort by priority
+        int (*const compare_priority)(const void*, const void*) = &compare_priorities;
+        dyn_array_sort(ready_queue, compare_priority);
         
         uint32_t size = dyn_array_size(ready_queue);
         uint32_t waiting_time = 0;
@@ -136,40 +124,31 @@ bool priority(dyn_array_t *ready_queue, ScheduleResult_t *result)
         return true;
 }
 
-
 bool round_robin(dyn_array_t *ready_queue, ScheduleResult_t *result, size_t quantum) 
 {
-    // error check params
     if(!ready_queue || !result || quantum <= 0)
         return false;
 
-    // initialize variables
     uint32_t size = dyn_array_size(ready_queue);
     dyn_array_t *dyn_arr_queue = dyn_array_create(0, sizeof(ProcessControlBlock_t), NULL);
-    // uint32_t types to easily calculate results
     uint32_t waiting_time = 0;
     uint32_t turnaround_time = 0;
     uint32_t run_time = 0;
 
     uint32_t current_run_time;
 
-    // get pcb initial arrival
     for (uint32_t i = 0; i < size; i++) {
         ProcessControlBlock_t *pcb_ptr = (ProcessControlBlock_t *)dyn_array_at(ready_queue, i);
-        // store priority
         pcb_ptr->priority = pcb_ptr->arrival;
     }
 
-    // set up initial pcb queue helper
-    pcb_queue_helper(ready_queue, dyn_arr_queue, run_time);
+    pcb_queuer(ready_queue, dyn_arr_queue, run_time);
 
-    // while dyn array size has not been capped
     while(dyn_array_size(dyn_arr_queue) != 0) {
         ProcessControlBlock_t pcb;
         dyn_array_extract_front(dyn_arr_queue, &pcb);
         waiting_time += run_time - pcb.arrival;
 
-        // get current run time
         if(pcb.remaining_burst_time > quantum)
             current_run_time = quantum;
         else
@@ -177,7 +156,6 @@ bool round_robin(dyn_array_t *ready_queue, ScheduleResult_t *result, size_t quan
 
         run_time += current_run_time;
 
-        // while more run time exists
         while(current_run_time > 0) {
             virtual_cpu(&pcb);
             current_run_time--;
@@ -185,22 +163,18 @@ bool round_robin(dyn_array_t *ready_queue, ScheduleResult_t *result, size_t quan
 
         pcb.arrival = run_time;
 
-        // get available pcb queue
-        pcb_queue_helper(ready_queue, dyn_arr_queue, run_time);
+        pcb_queuer(ready_queue, dyn_arr_queue, run_time);
 
         if(pcb.remaining_burst_time == 0)
-            // set turn around time if no more remaining burst time
             turnaround_time += run_time - pcb.priority;
         else
             dyn_array_push_back(dyn_arr_queue, &pcb);
     }
 
-    // set results
     result->average_waiting_time = (float)waiting_time / size;
     result->average_turnaround_time = (float)turnaround_time / size;
     result->total_run_time = run_time;
 
-    // destroy dyn array queue
     dyn_array_destroy(dyn_arr_queue);
     return true;
 }
@@ -242,13 +216,11 @@ dyn_array_t *load_process_control_blocks(const char *input_file)
 
 bool shortest_remaining_time_first(dyn_array_t *ready_queue, ScheduleResult_t *result) 
 {
-    // error check params
     if(!ready_queue || !result)
         return false;
 
     uint32_t size = dyn_array_size(ready_queue);
 
-    // store inital arrival time in priority
     for(uint32_t i = 0; i < size; i++) {
         ProcessControlBlock_t *pcb_ptr = (ProcessControlBlock_t *)dyn_array_at(ready_queue, i);
         pcb_ptr->priority = pcb_ptr->arrival;
@@ -260,23 +232,17 @@ bool shortest_remaining_time_first(dyn_array_t *ready_queue, ScheduleResult_t *r
     uint32_t turnaround_time = 0;
     uint32_t run_time = 0;
 
-    // use arrival calc helper to determine arrival difference and sort
-    dyn_array_sort(ready_queue, arrival_calc_helper);
-    // initial dyn array queue time
-    pcb_queue_sort_by_time_helper(ready_queue, dyn_arr_queue, run_time);
+    dyn_array_sort(ready_queue, pcb_compare_burst_time);
+    pcb_queue_sort_by_time(ready_queue, dyn_arr_queue, run_time);
 
-    // while dyn array size has not been capped
     while(dyn_array_size(dyn_arr_queue) != 0) {
         ProcessControlBlock_t pcb;
         dyn_array_extract_front(dyn_arr_queue, &pcb);
 
-        // update variables
         waiting_time += run_time - pcb.arrival;
-        // create ready queue size and run time variables
         uint32_t ready_queue_size = dyn_array_size(ready_queue);
         uint32_t current_run_time;
 
-        // if there's remaining space in ready queue
         if(ready_queue_size != 0) {
             uint32_t arrival_n;
             arrival_n = ((ProcessControlBlock_t *)dyn_array_at(ready_queue, dyn_array_size(ready_queue) - 1))->arrival;
@@ -284,33 +250,26 @@ bool shortest_remaining_time_first(dyn_array_t *ready_queue, ScheduleResult_t *r
         } else
             current_run_time = pcb.remaining_burst_time;
 
-        // increment run time with current run time
         run_time += current_run_time;
 
-        // while pcb has started
         while(current_run_time > 0) {
             virtual_cpu(&pcb);
             current_run_time--;
         }
-
-        // add the pcb arrival to the total run time
         pcb.arrival = run_time;
 
         if(pcb.remaining_burst_time == 0)
-            // check if pcb has completed and calc turnaround time with run time and initial dyn array queue time
             turnaround_time += run_time - pcb.priority;
         else
             dyn_array_push_back(dyn_arr_queue, &pcb);
 
-        pcb_queue_sort_by_time_helper(ready_queue, dyn_arr_queue, run_time);
+        pcb_queue_sort_by_time(ready_queue, dyn_arr_queue, run_time);
     }
 
-    // set results
     result->average_waiting_time = (float)waiting_time / size;
     result->average_turnaround_time = (float)turnaround_time / size;
     result->total_run_time = run_time;
 
-    // destroy dyn array queue
     dyn_array_destroy(dyn_arr_queue);
 
     return true;
@@ -354,7 +313,7 @@ bool shortest_job_first(dyn_array_t *ready_queue, ScheduleResult_t *result)
 
         if(dyn_array_size(dyn_arr_queue) > 0) {
             
-            dyn_array_sort(dyn_arr_queue, shortest_burst_time_helper);
+            dyn_array_sort(dyn_arr_queue, get_shorter_burst_time);
 
             while(dyn_array_size(dyn_arr_queue) > 0) {
                 
